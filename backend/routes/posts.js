@@ -31,10 +31,14 @@ router.post('/posts', authMiddleware, async (req, res) => {
 });
 
 router.get('/generate-upload-url', authMiddleware, (req, res) => {
-  const s3 = new AWS.S3();
+  const bucket = process.env.S3_BUCKET;
+  if (!bucket) {
+    return res.status(500).json({ error: 'S3_BUCKET is not configured' });
+  }
+  const s3 = new AWS.S3({ region: process.env.AWS_REGION });
   const key = `${req.userId}/${Date.now()}.jpg`; // Unique key for the file
   const params = {
-    Bucket: 'your-s3-bucket-name', // Replace with your bucket name later
+    Bucket: bucket,
     Key: key,
     Expires: 60, // URL expires in 60 seconds
     ContentType: 'image/jpeg',
